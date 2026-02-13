@@ -7,34 +7,39 @@
     <style>
         :root { --primary: #4a90e2; --bg: #f4f7f9; }
         
-        /* הסתרת פסי גלילה */
-        html, body { scrollbar-width: none; -ms-overflow-style: none; }
+        /* חסימת תנועות מסך מיותרות ושיפור מגע */
+        html, body { 
+            scrollbar-width: none; 
+            -ms-overflow-style: none;
+            overflow-x: hidden;
+            overscroll-behavior: none; /* מונע רענון במשיכה למטה */
+        }
         body::-webkit-scrollbar { display: none; }
 
-        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: var(--bg); margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; width: 100%; }
         
-        .header { text-align: center; margin-bottom: 20px; color: var(--primary); width: 100%; }
-        .header h1 { font-size: 1.6em; margin: 10px 0; }
-        .header p { font-size: 1em; color: #555; }
+        .header { text-align: center; margin-bottom: 15px; color: var(--primary); width: 90%; }
+        .header h1 { font-size: 1.5em; margin: 5px 0; }
+        .header p { font-size: 0.9em; color: #555; margin: 2px 0; }
 
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px; width: 100%; max-width: 1200px; padding-bottom: 20px; }
 
         .card { background: white; border-radius: 15px; padding: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; text-align: center; border-top: 5px solid var(--primary); }
-        .description { font-size: 0.95em; line-height: 1.5; color: #333; margin-bottom: 15px; min-height: 85px; display: flex; align-items: center; justify-content: center; }
+        .description { font-size: 0.95em; line-height: 1.4; color: #333; margin-bottom: 15px; min-height: 80px; display: flex; align-items: center; justify-content: center; }
 
-        .scratch-container { position: relative; width: 220px; height: 60px; background: #fff; border: 2px dashed #ccc; border-radius: 10px; overflow: hidden; }
-        .secret-name { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2em; color: var(--primary); z-index: 1; pointer-events: none; }
+        .scratch-container { position: relative; width: 220px; height: 65px; background: #fff; border: 2px dashed #ccc; border-radius: 10px; overflow: hidden; }
+        .secret-name { position: absolute; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.3em; color: var(--primary); z-index: 1; pointer-events: none; }
         
         canvas { position: absolute; top: 0; left: 0; z-index: 2; cursor: crosshair; touch-action: none; }
 
-        .footer { width: 100%; background: var(--primary); color: white; text-align: center; padding: 10px 0; margin-top: 25px; border-radius: 5px; font-weight: bold; font-size: 0.9em; }
+        .footer { width: 100%; background: var(--primary); color: white; text-align: center; padding: 10px 0; font-weight: bold; font-size: 0.85em; }
     </style>
 </head>
 <body>
 
 <div class="header">
     <h1>אברוני התא ותפקידם</h1>
-    <p>קראו את התפקיד, נחשו את האברון וגרדו כדי לבדוק!</p>
+    <p>גרדו היטב את המלבן האפור כדי לחשוף את התשובה!</p>
 </div>
 
 <div class="grid" id="gameGrid"></div>
@@ -55,7 +60,8 @@
         { desc: "קיים בתאי הצמחים, מספק לתאים תמיכה ומבנה קשיח. מקנה להם את צורתם.", name: "דופן התא", color: "#d9ccc5" }
     ];
 
-    function createCard(item) {
+    const grid = document.getElementById('gameGrid');
+    data.forEach(item => {
         const card = document.createElement('div');
         card.className = 'card';
         card.style.backgroundColor = item.color;
@@ -63,53 +69,52 @@
             <div class="description">${item.desc}</div>
             <div class="scratch-container">
                 <div class="secret-name">${item.name}</div>
-                <canvas width="220" height="60"></canvas>
+                <canvas width="220" height="65"></canvas>
             </div>
         `;
-        return card;
-    }
-
-    const grid = document.getElementById('gameGrid');
-    data.forEach(item => {
-        const card = createCard(item);
         grid.appendChild(card);
         setupScratch(card.querySelector('canvas'));
     });
 
     function setupScratch(canvas) {
-        const ctx = canvas.getContext('2d');
+        const ctx = canvas.getContext('2d', { alpha: false }); // שיפור ביצועים
         let isDrawing = false;
 
-        // שכבת הכיסוי
         ctx.fillStyle = '#b0b0b0';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        
         ctx.fillStyle = '#444';
         ctx.font = 'bold 16px Segoe UI';
         ctx.textAlign = 'center';
         ctx.fillText('גרדו כאן לגלות', canvas.width/2, canvas.height/2 + 7);
 
-        function scratch(e) {
+        function handleStart(e) {
+            isDrawing = true;
+            handleMove(e);
+        }
+
+        function handleMove(e) {
             if (!isDrawing) return;
+            e.preventDefault(); // מניעת גלילה של כל הדף
+
             const rect = canvas.getBoundingClientRect();
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            const x = clientX - rect.left;
-            const y = clientY - rect.top;
+            const pos = e.touches ? e.touches[0] : e;
+            const x = pos.clientX - rect.left;
+            const y = pos.clientY - rect.top;
 
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
-            ctx.arc(x, y, 18, 0, Math.PI * 2);
+            ctx.arc(x, y, 22, 0, Math.PI * 2); // מברשת קצת יותר גדולה
             ctx.fill();
         }
 
-        canvas.addEventListener('mousedown', () => isDrawing = true);
-        canvas.addEventListener('touchstart', (e) => { isDrawing = true; scratch(e); });
+        canvas.addEventListener('mousedown', handleStart);
+        canvas.addEventListener('touchstart', handleStart, { passive: false });
+        
+        window.addEventListener('mousemove', handleMove);
+        window.addEventListener('touchmove', handleMove, { passive: false });
+
         window.addEventListener('mouseup', () => isDrawing = false);
         window.addEventListener('touchend', () => isDrawing = false);
-        canvas.addEventListener('mousemove', scratch);
-        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); scratch(e); });
     }
 </script>
 
