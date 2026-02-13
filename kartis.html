@@ -7,12 +7,11 @@
     <style>
         :root { --primary: #4a90e2; --bg: #f4f7f9; }
         
-        /* חסימת תנועות מסך מיותרות ושיפור מגע */
         html, body { 
             scrollbar-width: none; 
             -ms-overflow-style: none;
             overflow-x: hidden;
-            overscroll-behavior: none; /* מונע רענון במשיכה למטה */
+            overscroll-behavior: none;
         }
         body::-webkit-scrollbar { display: none; }
 
@@ -54,7 +53,7 @@
         { desc: "אחראי לתפקודו התקין של התא, ולהעברת מידע תורשתי.", name: "גרעין התא", color: "#f9e1e1" },
         { desc: "הנוזל התוך-תאי ובו מומסים שונים, ומבנים ואברונים שונים. מקום התרחשות של תהליכים חיוניים.", name: "ציטופלזמה", color: "#fce8d1" },
         { desc: "תוחם את תכולת התא, ומאפשר רק לחלק מהחומרים לעבור דרכו פנימה והחוצה.", name: "קרום התא", color: "#e1e1e1" },
-        { desc: "מדור, או גופיף, או שקיק תוך-תאי, המתחם בממברנה משלו והוא בעל תפקיד ייחודי בתא.", name: "אברון", color: "#ffffff" },
+        { desc: "מדור, או גופיף, או שקיק תוך-תאי, המתוחם בממברנה משלו והוא בעל תפקיד ייחודי בתא.", name: "אברון", color: "#ffffff" },
         { desc: "אחראי על תהליך הנשימה והפקת האנרגיה בתא.", name: "מיטוכונדריה", color: "#e7e1f9" },
         { desc: "מצוי ברקמות הירוקות בצמחים ואצות, קולט את האור הדרוש לתהליך הפוטוסינתזה.", name: "כלורופלסט", color: "#e1f9e1" },
         { desc: "קיים בתאי הצמחים, מספק לתאים תמיכה ומבנה קשיח. מקנה להם את צורתם.", name: "דופן התא", color: "#d9ccc5" }
@@ -77,7 +76,7 @@
     });
 
     function setupScratch(canvas) {
-        const ctx = canvas.getContext('2d', { alpha: false }); // שיפור ביצועים
+        const ctx = canvas.getContext('2d', { alpha: false });
         let isDrawing = false;
 
         ctx.fillStyle = '#b0b0b0';
@@ -94,7 +93,7 @@
 
         function handleMove(e) {
             if (!isDrawing) return;
-            e.preventDefault(); // מניעת גלילה של כל הדף
+            e.preventDefault();
 
             const rect = canvas.getBoundingClientRect();
             const pos = e.touches ? e.touches[0] : e;
@@ -103,7 +102,7 @@
 
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
-            ctx.arc(x, y, 22, 0, Math.PI * 2); // מברשת קצת יותר גדולה
+            ctx.arc(x, y, 22, 0, Math.PI * 2);
             ctx.fill();
         }
 
