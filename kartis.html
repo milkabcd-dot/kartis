@@ -76,11 +76,13 @@
     });
 
     function setupScratch(canvas) {
-        const ctx = canvas.getContext('2d', { alpha: false });
+        const ctx = canvas.getContext('2d');
         let isDrawing = false;
 
+        // ציור שכבת הכיסוי
         ctx.fillStyle = '#b0b0b0';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
         ctx.fillStyle = '#444';
         ctx.font = 'bold 16px Segoe UI';
         ctx.textAlign = 'center';
